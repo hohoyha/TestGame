@@ -19,26 +19,35 @@ io.sockets.on('connection', function(socket){
     socket.id = Math.random();
     socket.x = 0;
     socket.y = 0;
+    socket.number = "" + Math.floor(10 
+    * Math.random());
+
     SOKET_LIST[socket.id] = socket;
     
-
-    socket.on('happy', function(data){
-        console.log(data);
+    socket.on('disconnect', function() {
+        delete SOKET_LIST[socket.id];
     });
 
-    socket.emit('serverMsg',{
-        msg:'hello Hoo'
-    });
 });
 
 setInterval(function() {
+
+    var pack =[];
     for( var i in SOKET_LIST){
         var socket = SOKET_LIST[i];
         socket.x++;
         socket.y++;
-        socket.emit('newPosition',{
+        pack.push({
             x:socket.x,
-            y:socket.y
+            y:socket.y,
+            number:socket.number       
         });
     }
+
+    for(var i in SOKET_LIST){
+        var socket = SOKET_LIST[i];
+        socket.emit('newPosition', pack);
+    }
+
+
 }, 1000/25);
