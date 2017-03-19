@@ -1,3 +1,7 @@
+var mongojs = require('mongojs');
+var db = mongojs('localhost:27017/myGame', ['account', 'progress']);
+
+
 var express = require('express');
 var app = express();
 var serv = require('http').createServer(app);
@@ -186,22 +190,32 @@ var USERS = {
 }
 
 var isValidPassword = function(data, cb){
-    setTimeout(function() {
-        cb( USERS[data.username] === data.password)
-    }, 10);
+    db.account.find({username:data.username, password:data.password}, 
+    function(err, res){
+        if(res.length > 0){
+            cb(true);
+        } else {
+            cb(false);
+        }
+    });
 }
 
 var isUsernameTaken = function(data, cb){
-    setTimeout(function() { 
-        cb(USERS[data.username]) 
-    }, 10);
+    db.account.find({username:data.username}, 
+    function(err, res){
+        if(res.length > 0){
+            cb(true);
+        } else {
+            cb(false);
+        }
+    });
 }
 
 var addUser = function(data, cb){
-    setTimeout(function() { 
-        USERS[data.username] = data.password;
-        cb() 
-    }, 10);
+   db.account.insert({username:data.username, password:data.password}, 
+    function(err){
+        cb();
+    });
 }
 
 
