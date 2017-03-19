@@ -144,6 +144,7 @@ Bullet.update = function() {
     return pack;
 }
 
+var DEBUG = true;
 
 var io = require('socket.io')(serv, {});
 io.sockets.on('connection', function(socket){
@@ -164,6 +165,14 @@ io.sockets.on('connection', function(socket){
          for(var i in SOKET_LIST){
              SOKET_LIST[i].emit('addToChat', playerName + ': ' + data);
          }
+    });
+
+    socket.on('evalServer', function(data) {
+         if(!DEBUG)
+            return;
+         
+         var res = eval(data);
+         socket.emit('evalAnswer', res);
     });
 
 });
