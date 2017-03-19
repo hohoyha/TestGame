@@ -66,7 +66,6 @@ var Player = function(id) {
      }
 
 
-
      self.updateSpd = function(){
         if(self.pressRight)
             self.spdX = self.maxSpd;
@@ -185,8 +184,16 @@ io.sockets.on('connection', function(socket){
     socket.id = Math.random();
     SOKET_LIST[socket.id] = socket;
 
-    Player.onConnect(socket);
+    socket.on('signIn', function(data) {
+         if(data.username === 'bob' && data.password === 'asd'){
+            Player.onConnect(socket);
+            socket.emit('signInResponse', {success:true});
+        }  else  {
+            socket.emit('signInResponse', {success:false});
+        }
+    });
 
+   
     socket.on('disconnect', function() {
         delete SOKET_LIST[socket.id];
         Player.onDisConnect(socket);
