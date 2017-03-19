@@ -185,16 +185,23 @@ var USERS = {
     "test":"test",
 }
 
-var isValidPassword = function(data){
-    return USERS[data.username] === data.password;
+var isValidPassword = function(data, cb){
+    setTimeout(function() {
+        cb( USERS[data.username] === data.password)
+    }, 10);
 }
 
-var isUsernameTaken = function(data){
-    return USERS[data.username];
+var isUsernameTaken = function(data, cb){
+    setTimeout(function() { 
+        cb(USERS[data.username]) 
+    }, 10);
 }
 
-var addUser = function(data){
-    return USERS[data.username] = data.password;
+var addUser = function(data, cb){
+    setTimeout(function() { 
+        USERS[data.username] = data.password;
+        cb() 
+    }, 10);
 }
 
 
@@ -205,21 +212,26 @@ io.sockets.on('connection', function(socket){
     SOKET_LIST[socket.id] = socket;
 
     socket.on('signIn', function(data) {
-         if(isValidPassword(data)){
-            Player.onConnect(socket);
-            socket.emit('signInResponse', {success:true});
-        }  else  {
-            socket.emit('signInResponse', {success:false});
-        }
+        isValidPassword(data, function(res){
+            if(res){
+                Player.onConnect(socket);
+                socket.emit('signInResponse', {success:true});
+            }else {
+                socket.emit('signInResponse', {success:false});
+            }
+        });
     });
 
-    socket.on('signUp', function(data) {
-         if(isUsernameTaken(data)){
-            socket.emit('signUpResponse', {success:false});
-        }  else  {
-            addUser(data);
-            socket.emit('signUpResponse', {success:true});
-        }
+     socket.on('signUp', function(data) {
+        isUsernameTaken(data, function(res){
+            if(res){
+                socket.emit('signUpResponse', {success:false});
+            }else {
+                addUser(data, function(){
+                    socket.emit('signUpResponse', {success:true});
+                });  
+            }
+        });
     });
 
    
