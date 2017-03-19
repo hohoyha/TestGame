@@ -6,7 +6,7 @@
     <button id="signDiv-signUp">Sign Up</button>
 </div>
 
-<div id="gameDiv">
+<div id="gameDiv" style="display: none">
     <canvas id="ctx" width="500", height="500" 
     style="border: 1px solid #000000"></canvas>
 
@@ -36,12 +36,25 @@
                     password:signDivPassword.value});
      }
 
+     signDivSignUp.onclick = function() {
+         socket.emit('signUp', {username:signDivUsername.value, 
+                    password:signDivPassword.value});
+     }
+
     socket.on('signInResponse', function(data){ 
         if(data.success) {
             signDiv.style.display = 'none';
             gameDiv.style.display = 'inline-block';
         }else{
             alert("Sign in unsuccessful.");
+        }
+    });
+
+     socket.on('signUpResponse', function(data){ 
+        if(data.success) {
+            alert("Sign up successful.");;
+        }else{
+            alert("Sign up unsuccessful.");
         }
     });
         

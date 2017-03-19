@@ -178,6 +178,26 @@ Bullet.update = function() {
 
 var DEBUG = true;
 
+var USERS = {
+    //username:password
+    "bob":"asd",
+    "bob2":"bob",
+    "test":"test",
+}
+
+var isValidPassword = function(data){
+    return USERS[data.username] === data.password;
+}
+
+var isUsernameTaken = function(data){
+    return USERS[data.username];
+}
+
+var addUser = function(data){
+    return USERS[data.username] = data.password;
+}
+
+
 var io = require('socket.io')(serv, {});
 io.sockets.on('connection', function(socket){
     
@@ -185,11 +205,20 @@ io.sockets.on('connection', function(socket){
     SOKET_LIST[socket.id] = socket;
 
     socket.on('signIn', function(data) {
-         if(data.username === 'bob' && data.password === 'asd'){
+         if(isValidPassword(data)){
             Player.onConnect(socket);
             socket.emit('signInResponse', {success:true});
         }  else  {
             socket.emit('signInResponse', {success:false});
+        }
+    });
+
+    socket.on('signUp', function(data) {
+         if(isUsernameTaken(data)){
+            socket.emit('signUpResponse', {success:false});
+        }  else  {
+            addUser(data);
+            socket.emit('signUpResponse', {success:true});
         }
     });
 
