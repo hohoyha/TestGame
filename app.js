@@ -29,6 +29,10 @@ var Entity = function() {
         self.y += self.spdY;
     }
 
+    self.getDistance = function(pt) {
+        return Math.sqrt(Math.pow(self.x - pt.x, 2) + Math.pow(self.y - pt.y, 2));
+    }
+
     return self;
 }
 
@@ -56,7 +60,7 @@ var Player = function(id) {
      }
 
      self.shootBullet = function(angle) {
-         var b = Bullet(angle);
+         var b = Bullet(self.id, angle);
             b.x = self.x;
             b.y = self.y;
      }
@@ -123,11 +127,12 @@ Player.update = function() {
 }
 
 
-var Bullet = function(angle) {
+var Bullet = function( parent, angle) {
     var self  = Entity();
     self.id = Math.random();
     self.spdX = Math.cos(angle/180*Math.PI) * 10;
     self.spdY = Math.sin(angle/180*Math.PI) * 10;
+    self.parent = parent;
 
     self.time = 0;
     self.toRmove = false;
@@ -136,6 +141,15 @@ var Bullet = function(angle) {
         if(self.time++ > 100)
             self.toRmove = true;
         super_update();
+
+        for(var i in Player.list) {
+            var p = Player.list[i];
+            if( self.getDistance(p) < 32 && self.parent !== p.id) {
+                //handle collision ex: hp--;
+                self.toRmove = true;
+            }
+        }
+
     }
 
     Bullet.list[self.id] = self;
@@ -145,15 +159,20 @@ Bullet.list = {};
 
 Bullet.update = function() {
     
-    
     var pack =[];
     for( var i in Bullet.list){
         var bullet = Bullet.list[i];
-        bullet.update(),
-        pack.push({
+        bullet.update();
+        if(bullet.toRmove) {
+            delete Bullet.list[i];
+        }
+        else {
+            pack.push({
             x:bullet.x,
             y:bullet.y,      
-        });
+            });
+        }
+       
     }
     return pack;
 }
