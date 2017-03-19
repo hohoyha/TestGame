@@ -41,13 +41,26 @@ var Player = function(id) {
      self.pressLeft = false;
      self.pressUp = false;
      self.pressDown = false;
+     self.pressingAttack = false;
+     self.mouseAngle = 0;
      self.maxSpd = 10;
 
      var super_udpate = self.update;
      self.update = function() {
          self.updateSpd();
          super_udpate();
+
+          if(self.pressingAttack){
+           self.shootBullet(self.mouseAngle);
+        }   
      }
+
+     self.shootBullet = function(angle) {
+         var b = Bullet(angle);
+            b.x = self.x;
+            b.y = self.y;
+     }
+
 
 
      self.updateSpd = function(){
@@ -84,6 +97,10 @@ Player.onConnect = function(socket){
             player.pressUp = data.state;
         else if(data.inputId === 'down' )
             player.pressDown = data.state;
+         else if(data.inputId === 'attack' )
+            player.pressingAttack = data.state;
+         else if(data.inputId === 'mouseAngle' )
+            player.mouseAngle = data.state;
     });
 }
 
@@ -128,9 +145,6 @@ Bullet.list = {};
 
 Bullet.update = function() {
     
-    if(Math.random() < 0.1){
-        Bullet(Math.random()*360);
-    }
     
     var pack =[];
     for( var i in Bullet.list){
@@ -169,7 +183,7 @@ io.sockets.on('connection', function(socket){
 
     socket.on('evalServer', function(data) {
          if(!DEBUG)
-            return;
+            return
          
          var res = eval(data);
          socket.emit('evalAnswer', res);
