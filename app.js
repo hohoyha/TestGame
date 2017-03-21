@@ -6,6 +6,9 @@ var express = require('express');
 var app = express();
 var serv = require('http').createServer(app);
 
+var profiler = require('v8-profiler');
+var fs = require('fs');
+
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/client/index.html');
 });
@@ -403,3 +406,17 @@ setInterval(function() {
     removePack.bullet = [];
                                    
 }, 1000/25);
+
+var startProfiling = function(duration) {
+    profiler.startProfiling('1', true);
+    setTimeout(function(){
+        var profile1 = profiler.stopProfiling('1');
+        profile1.export(function(err, result){
+            fs.writeFile('./profile.cpuprofile', result);
+            profile1.delete();
+            console.log("Profile saved.");
+        });
+    }, duration);
+}
+
+startProfiling(10000);
